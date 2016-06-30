@@ -1,0 +1,52 @@
+Boicu Ionut 335CA - Tema 3 APD
+
+Vom imparti tema in 3 faze:
+1 - creare topologie
+2 - impartire sudoku
+3 - rezolvare sudoku
+
+Faza 1:
+
+	Fiecare proces citeste linia din fisierul de topologie care ii apartine, 
+astfel fiecare isi cunoaste proprii vecini.
+	Algoritmul de creare a topologiei este urmatorul:
+	Partea 1)
+		Fiecare proces isi alege un parinte si ii trimite un mesaj ACK, echivalentul
+	lui "vreau ca tu sa fii parintele meu", si tuturor celorlalti vecini NACK = 
+	"nu vreau sa va fiu copil".
+		Fiecare proces stie cati vecini are, deci stie cate mesaje trebuie sa 
+	primeasca, asa ca face receive de atatea ori cati vecini are, astfel va afla
+	cine ii sunt copii(cei ce i-au trimis ACK).
+		In acest moment s-au exclus ciclurile din topologie.
+	Partea 2)
+		Incepem din nodurile terminale si cream tabela lor de rutare, ca fiind
+	ajung oriunde prin parintele meu, iar apoi o trimitem printr-un mesaj la parinte.
+		Parintii isi creaza propria tabela de rutare, folosind informatii din tabela
+	copilului, si stiind ca in toate celelalate noduri 'nevizitate' va ajunge prin parintele sau.
+		Root-ul nu va mai trimite mesaj mai departe, neavand parinte.
+		Tabela de rutare finala este gata, si se va folosi pentru a comunica
+	intre procese.
+
+Faza 2:
+	
+	Procesul root incepe prin a citit matricea sudoku, si o imparte in bucatele n x n
+pentru a le trimite fiecaruia spre rezolvare si isi pastreaza prima bucata.
+	Impartirea se face in functie de numarul procesului: 
+		Un proces va lua bucata de pe linia nr_proces / n si coloana nr_proces % n.
+	Mesaje trimise de root se fac prin intermediul tabelei de rutare salvata in matricea fullT, iar tagul va fi procesul destinatie finala.
+		Fiecare proces face apoi receive pe mesaj si isi compara numele cu tagul,
+	daca cele doua coincid pastreaza matricea primita, daca nu ii face forward.
+
+	In acest moment fiecare proces are o 'piesa' de sudoku pe care trebuie sa o rezolve.
+
+Faza 3:
+
+	Fiecare nod terminal isi face toate solutiile posibile pentru patratul sau
+prin functia SudokuLeaf si odata ce a gasit o solutie o trimite mai departe parintelui, pana cand nu vor mai fi solutii si va trimite mesajul de STOP.
+	Parintii asteapta sa primeasca solutii de la copii, pana cand vor primii 
+mesajul "don't send". Dupa primirea si stocarea tuturor solutiilor copiilor 
+se fac si si se stocheaza toate solutiile parintelui pentru patratul lui.
+	Apoi urmeaza partea de combinare a solutiilor prin backtracking.
+	In final se ajunge la root, care odata ce a gasit o solutie nu va mai 
+cauta altele, si va iesi din backtracking, va salva solutia si o va scrie in fisier.
+	Se vor inchide si elibera restul resurselor folosite si se va termina programul.

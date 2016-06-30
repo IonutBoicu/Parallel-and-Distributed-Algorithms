@@ -1,0 +1,110 @@
+Boicu Ionut 335CA - Tema 2 APD
+
+Pentru realizarea temei am folosit scheletul de laborator numarul 5. 
+Am preluat WorkPool.java si am creat RelicateWorkers.java. 
+
+Clase folosite:
+-Task: tine minte numele documentului
+-Map extinde Task: tine minte offsteul, dimensiunea si numarul task`ului.
+-Reduce extinde Task: tine minte lista cu cuvintele maximale.
+
+-Workers extinde Thread: in care se realizeaza algoritmul propriu zis.
+
+-ReplicateWorkers: contine citirea, scrierea, si clasa main.
+
+Dupa citirea datelor de intrare, preiau dimensiunea fiecarui fisier de prelucrat,
+ o impart in fragmente imaginare de marimi identince, mai putin ultimul care are 
+ dimensiune variabila. 
+Apoi fiecare fragment este trimis drept un task workpool`ului(task de tip Map).
+Taskul contine numele documentului, offsetul, dimensiunea pe care trebuie sa o 
+citeasca si numarul taskului ce prelucreaza acel fisier.
+
+Odata ce s-a terminat fragmentarea fisierelor in taskuri, initializez 
+threadurile(workers) si le pornesc, intrand in metoda RUN a clasei Workers.
+
+In run se verifica tipul task`ului (Map/Reduce):
+	Daca este de tip Map, atunci se incepe deschiderea fisierului 
+pentru citire si prelucrare. Daca avem offset atunci sarim peste bitii de offset.
+Verificam daca primul byte citit se afla deja pe un cuvant, si daca se afla 
+il sarim citind byte cu byte pana se ajunge la un separator de text. 
+	Apoi citim dimensiunea necesara, fara bitii pe care i`am sarit 
+din primul cuvant(daca acesta exista).
+	Verificam daca ultimul byte citit se afla pe un cuvant, si daca da,
+ atunci mai citim bytes pana cand ajungem la un token separator de text.
+ 	Urmeaza impartirea textului in functie de separatori cu ajutorul
+ lui StringTokenizer. Pentru fiecare cuvant gasit il adaugam in HashMap
+ <dimenisunea cuvantului, numarul de aparatii totale + 1>. Apoi aflam
+ maximul dimensiunii si cautam toate cuvintele cu aceasta proprietate.
+ 	La final verificam daca s-au terminat toate taskurile de tip Map
+ pentru documentul curent, si in cazul afirmativ cream un task de tip
+ Reduce si il adaugam in workpool.
+
+ 	Daca este de tip Reduce, atunci se va incepe prin combinarea datelor
+ oferite de taskurile de tip Map. Prin combinare se intelege intrepatrunderea
+ datelor din HashMap si aflarea dimensiunii maxime globale a unui cuvant
+ si a tuturor cuvintelor cu aceasta proprietate si salvarea numarului
+ aparitiilor lor.
+ 	Urmeaza faza de procesare in care vom determina rangul unui document,
+ in functie de datele prelucrate anterior. Aflarea rangului se face
+ conform cerintei, iar la final se realizeaza truncherea rezultatului pana
+ la 2 zecimale.
+
+ Dupa terminarea taskului curent, un thread preia din workpool task-urile
+ ramase. In cazul in care nu mai sunt task-uri ramase si toate thread-urile
+ nu mai executa niciun task, atunci s-a terminat executia programului, se 
+ inchid thread-urile, iar master thread realizeaza afisarea.
+
+ Realizarea scalabilitatii:
+	test1.txt
+--------------------------
+| Num_Threads |   Time   |
+--------------------------
+|       1     | 0m5.048s |
+--------------------------
+|       2     | 0m4.315s |
+--------------------------
+|       4     | 0m2.247s |
+--------------------------
+|       8     | 0m1.660s |
+--------------------------
+
+	test2.txt
+--------------------------
+| Num_Threads |   Time   |
+--------------------------
+|       1     | 0m22.518s|
+--------------------------
+|       2     | 0m15.858s|
+--------------------------
+|       4     | 0m9.441s |
+--------------------------
+|       8     | 0m6.092s |
+--------------------------
+
+	test3.txt
+--------------------------
+| Num_Threads |   Time   |
+--------------------------
+|       1     | 0m2.423s |
+--------------------------
+|       2     | 0m2.150s |
+--------------------------
+|       4     | 0m1.933s |
+--------------------------
+|       8     | 0m1.641s |
+--------------------------
+
+	test4.txt
+--------------------------
+| Num_Threads |   Time   |
+--------------------------
+|       1     | 1m0.622s |
+--------------------------
+|       2     | 0m34.951s|
+--------------------------
+|       4     | 0m21.528s|
+--------------------------
+|       8     | 0m16.913s|
+--------------------------
+
+
